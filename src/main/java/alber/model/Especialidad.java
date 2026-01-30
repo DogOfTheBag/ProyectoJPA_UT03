@@ -17,8 +17,9 @@ public class Especialidad {
     private String nombre;
 
     @OneToMany(mappedBy = "especialidad")
-    @Column(name = "especialidad")
+    @Column(name = "profesores")
     private List<Profesor> profesores;
+
 
     public Especialidad() {
     }

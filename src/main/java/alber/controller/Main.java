@@ -1,17 +1,19 @@
 package alber.controller;
 
-//TIP Para <b>ejecutar</b> el código, pulsar <shortcut actionId="Run"/> o
-// Haz clic en el ícono <icon src="AllIcons.Actions.Execute"/> del margen.
+import alber.repository.Repository;
+import alber.view.VentanaPrincipal;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Pulsa <shortcut actionId="ShowIntentionActions"/> con tu cursor en el texto resaltado
-        // para ver cómo IntelliJ IDEA sugiere corregirlo.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Presione <shortcut actionId="Debug"/> para iniciar la depuración de su código. Hemos creado un punto de interrupción <icon src="AllIcons.Debugger.Db_set_breakpoint"/>
-            // para ti, pero siempre puedes añadir más pulsando <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("ProyectoJPA_UT03");
+        EntityManager em = emf.createEntityManager();
+
+        Repository repo = new Repository(em);
+
+        new VentanaPrincipal(repo).setVisible(true);
     }
 }

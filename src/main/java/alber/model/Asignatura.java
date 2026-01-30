@@ -15,7 +15,7 @@ public class Asignatura {
     @Column(name = "nombre" , nullable = false, unique = true)
     private String nombre;
 
-    @ManyToMany(mappedBy = "asignaturas", cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "asignaturas")
     private List<Profesor> profesores;
 
     public Asignatura() {

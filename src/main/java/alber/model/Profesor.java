@@ -15,17 +15,18 @@ public class Profesor {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "especialidad_id" , nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "especialidad_id", nullable = false)
     private Especialidad especialidad;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "centro_id", nullable = false)
     private Centro centro;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name= "jefe_id")
+    @ManyToOne
+    @JoinColumn(name = "jefe_id")
     private Profesor jefeDepartamento;
+
 
     @ManyToMany()
     @JoinTable(name = "profesor_asignatura",
