@@ -21,10 +21,8 @@ public class Asignatura {
     public Asignatura() {
     }
 
-    public Asignatura(Long id, String nombre, List<Profesor> profesores) {
-        this.id = id;
+    public Asignatura(String nombre) {
         this.nombre = nombre;
-        this.profesores = profesores;
     }
 
 

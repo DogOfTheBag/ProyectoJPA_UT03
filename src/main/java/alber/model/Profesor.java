@@ -38,8 +38,7 @@ public class Profesor {
     public Profesor() {
     }
 
-    public Profesor(Long id, String nombre, Especialidad especialidad) {
-        this.id = id;
+    public Profesor(String nombre, Especialidad especialidad) {
         this.nombre = nombre;
         this.especialidad = especialidad;
     }

@@ -24,10 +24,8 @@ public class Especialidad {
     public Especialidad() {
     }
 
-    public Especialidad(Long id, String nombre, List<Profesor> profesores) {
-        this.id = id;
+    public Especialidad(String nombre) {
         this.nombre = nombre;
-        this.profesores = profesores;
     }
 
     public Long getId() {

@@ -31,8 +31,7 @@ public class Centro {
     public Centro() {
     }
 
-    public Centro(Long id, String nombre, String localidad) {
-        this.id = id;
+    public Centro(String nombre, String localidad) {
         this.nombre = nombre;
         this.localidad = localidad;
     }
