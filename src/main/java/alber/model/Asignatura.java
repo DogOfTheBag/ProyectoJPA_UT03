@@ -6,6 +6,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "asignaturas")
+@NamedQuery(name = "Asignatura.findAll",
+                query ="Select a from Asignatura a ORDER BY a.nombre")
 public class Asignatura {
 
     @Id

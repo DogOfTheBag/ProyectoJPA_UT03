@@ -59,9 +59,9 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private void initEventos() {
-       /* btnOp1.addActionListener(e -> {
+        btnOp1.addActionListener(e -> {
             try {
-                String resultado = repo.op1_listadoAsignaturasYProfesores();
+                String resultado = repo.listarProf_Asig();
                 mostrarTexto("Operación 1", resultado);
             } catch (Exception ex) {
                 mostrarError("Error en Operación 1", ex);
@@ -70,7 +70,7 @@ public class VentanaPrincipal extends JFrame {
 
         btnOp2.addActionListener(e -> {
             try {
-                String resultado = repo.op2_listadoCentros();
+                String resultado = repo.listarCentros();
                 mostrarTexto("Operación 2", resultado);
             } catch (Exception ex) {
                 mostrarError("Error en Operación 2", ex);
@@ -85,7 +85,7 @@ public class VentanaPrincipal extends JFrame {
                 Long idProf = pedirLong("Introduce el ID del profesor:");
                 if (idProf == null) return;
 
-                String msg = repo.op3_insertarAsignaturaEnProfesor(idAsig, idProf);
+                String msg = repo.insertarAsignaturaEnProfesor(idAsig, idProf);
                 JOptionPane.showMessageDialog(this, msg, "Operación 3", JOptionPane.INFORMATION_MESSAGE);
 
             } catch (Exception ex) {
@@ -137,6 +137,6 @@ public class VentanaPrincipal extends JFrame {
     private void mostrarError(String titulo, Exception ex) {
         String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
         JOptionPane.showMessageDialog(this, msg, titulo, JOptionPane.ERROR_MESSAGE);
-    }*/
     }
 }
+

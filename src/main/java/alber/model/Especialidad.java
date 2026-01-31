@@ -51,4 +51,6 @@ public class Especialidad {
     public void setProfesores(List<Profesor> profesores) {
         this.profesores = profesores;
     }
+
+
 }
