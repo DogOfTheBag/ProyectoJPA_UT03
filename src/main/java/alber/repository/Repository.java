@@ -52,7 +52,7 @@ public class Repository {
                     String Centro = (p.getCentro() != null ? p.getCentro().getNombre() : "Sin Centro");
                     String Jefe = (p.getJefeDepartamento() != null ? p.getJefeDepartamento().getNombre() :  "Sin Jefe");
                     sb.append(p.getNombre()).append(", ").append(p.getId()).append(", ").append(especialidad)
-                            .append(", ").append(Centro).append(", ").append("JEFE: " + Jefe).append("\n\n");
+                            .append(", ").append(Centro).append(", ").append("JEFE: " + Jefe).append("\n");
                 }
             }
 
@@ -60,6 +60,7 @@ public class Repository {
                 maxProfes = numProfes;
                 asigMax = asignatura;
             }
+            sb.append("\n\n");
         }
 
         sb.append("\n --------------------------------\n");
@@ -96,7 +97,44 @@ public class Repository {
     }
 
     public String insertarAsignaturaEnProfesor(Long idAsig, Long idProf) {
-        return "pepe";
+        if(idAsig == null || idProf == null){
+            return"IDs inválidos (null).";
+        }
+
+        Asignatura a = em.find(Asignatura.class, idAsig);
+        if(a == null){
+            return "No existe la asignatura con id: " + idAsig;
+        }
+
+        Profesor p = em.find(Profesor.class, idProf);
+        if(p == null){
+            return "No existe el profesor con id: " + idProf;
+        }
+
+        boolean yaLaImparte = em.createQuery("SELECT COUNT(a.id)" +
+                "FROM Profesor p JOIN p.asignaturas a WHERE p.id = :idProf AND a.id = : idAsig", Long.class).setParameter("idProf", idProf)
+                .setParameter("idAsig", idAsig).getSingleResult() > 0;
+
+        if(yaLaImparte){
+            return "El profesor "+ idProf + " ya imparte la asignatura: " + idAsig;
+        }
+
+        try{
+            em.getTransaction().begin();
+
+            p.añadirAsignatura(a);
+
+            em.merge(p);
+
+            em.getTransaction().commit();
+            return "Operación realizada correctamente: Profesor " + idProf + " imparte la asignatura " + idAsig;
+        } catch (Exception e) {
+            if(em.getTransaction().isActive()){
+                em.getTransaction().rollback();
+            }
+            return "Error al hacer la operacion: " + e.getMessage();
+        }
+
     }
 
     public List<Asignatura> findAsignaturas() {
@@ -108,13 +146,10 @@ public class Repository {
     }
 
 
-
-
     public String cargarDatosInicialesCompletos() {
         try {
             em.getTransaction().begin();
 
-            // Si ya hay algo, no metemos nada (evita duplicados)
             Long hayCentros = em.createQuery("SELECT COUNT(c.id) FROM Centro c", Long.class).getSingleResult();
             Long hayAsignaturas = em.createQuery("SELECT COUNT(a.id) FROM Asignatura a", Long.class).getSingleResult();
             Long hayEspecialidades = em.createQuery("SELECT COUNT(e.id) FROM Especialidad e", Long.class).getSingleResult();

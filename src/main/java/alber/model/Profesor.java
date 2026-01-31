@@ -50,12 +50,6 @@ public class Profesor {
         if(!asignatura.getProfesores().contains(this)) {asignatura.getProfesores().add(this);}
     }
 
-    public void eliminarAsignatura(Asignatura asignatura) {
-        if(asignatura == null) return;
-        this.asignaturas.remove(asignatura);
-        asignatura.getProfesores().remove(this);
-    }
-
     /****MÉTODOS AUXILIARES****/
 
     public Long getId() {

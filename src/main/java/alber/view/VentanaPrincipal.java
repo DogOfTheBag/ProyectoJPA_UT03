@@ -4,8 +4,6 @@ import alber.repository.Repository;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 public class VentanaPrincipal extends JFrame {
 
@@ -50,10 +48,6 @@ public class VentanaPrincipal extends JFrame {
 
         panel.add(panelBotones, BorderLayout.CENTER);
 
-        JLabel nota = new JLabel("Los resultados se muestran en ventanas emergentes (JOptionPane).");
-        nota.setHorizontalAlignment(SwingConstants.CENTER);
-        nota.setFont(new Font("Arial", Font.PLAIN, 12));
-        panel.add(nota, BorderLayout.SOUTH);
 
         setContentPane(panel);
     }
@@ -95,19 +89,11 @@ public class VentanaPrincipal extends JFrame {
 
         btnSalir.addActionListener(e -> dispose());
 
-        // Si quieres hacer algo al cerrar (opcional, normalmente lo hace el main)
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                // Aquí NO cierres el EntityManagerFactory.
-                // El cierre recomendado se hace en el main.
-            }
-        });
     }
 
     private Long pedirLong(String mensaje) {
         String input = JOptionPane.showInputDialog(this, mensaje);
-        if (input == null) return null; // canceló
+        if (input == null) return null;
 
         input = input.trim();
         if (input.isEmpty()) {
