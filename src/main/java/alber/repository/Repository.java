@@ -69,7 +69,30 @@ public class Repository {
     }
 
     public String listarCentros() {
-        return "pepe";
+        StringBuilder sb = new StringBuilder();
+        List<Centro> centros = findCentros();
+
+        if(centros.isEmpty()){
+            return ("No hay centros");
+        }
+
+        for (Centro c : centros) {
+            Long numProfes = em.createQuery("SELECT COUNT(p.id) FROM Profesor p WHERE p.centro.id = :idCentro", Long.class).setParameter("idCentro", c.getId()).getSingleResult();
+
+            Long numAsignaturas = em.createQuery("SELECT COUNT (DISTINCT a.id) FROM Profesor p JOIN p.asignaturas a WHERE p.centro.id = : idCentro",
+                    Long.class).setParameter("idCentro", c.getId()).getSingleResult();
+
+            String director = (c.getDirector() != null ? c.getDirector().getNombre() : "Sin Director");
+
+            sb.append("Centro: " + c.getNombre())
+                    .append(", ").append("ID: " + c.getId())
+                    .append(", ").append("Localidad: " + c.getLocalidad())
+                    .append(", ").append("Director: " + director)
+                    .append(", ").append("Numero de asignaturas: " + numAsignaturas)
+                    .append(", ").append("Numero de profesores: " + numProfes)
+                    .append("\n\n");
+        }
+        return sb.toString();
     }
 
     public String insertarAsignaturaEnProfesor(Long idAsig, Long idProf) {
@@ -78,6 +101,10 @@ public class Repository {
 
     public List<Asignatura> findAsignaturas() {
         return em.createNamedQuery("Asignatura.findAll").getResultList();
+    }
+
+    public List<Centro> findCentros() {
+        return em.createNamedQuery("Centro.findAll").getResultList();
     }
 
 
