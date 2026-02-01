@@ -152,164 +152,281 @@ public class Repository {
         try {
             em.getTransaction().begin();
 
-            Long hayCentros = em.createQuery("SELECT COUNT(c.id) FROM Centro c", Long.class).getSingleResult();
-            Long hayAsignaturas = em.createQuery("SELECT COUNT(a.id) FROM Asignatura a", Long.class).getSingleResult();
-            Long hayEspecialidades = em.createQuery("SELECT COUNT(e.id) FROM Especialidad e", Long.class).getSingleResult();
-            Long hayProfes = em.createQuery("SELECT COUNT(p.id) FROM Profesor p", Long.class).getSingleResult();
+            // Evitar duplicados: si ya hay algo, no insertamos
+            Long hayE = em.createQuery("SELECT COUNT(e.id) FROM Especialidad e", Long.class).getSingleResult();
+            Long hayA = em.createQuery("SELECT COUNT(a.id) FROM Asignatura a", Long.class).getSingleResult();
+            Long hayC = em.createQuery("SELECT COUNT(c.id) FROM Centro c", Long.class).getSingleResult();
+            Long hayP = em.createQuery("SELECT COUNT(p.id) FROM Profesor p", Long.class).getSingleResult();
 
-            if (hayCentros > 0 || hayAsignaturas > 0 || hayEspecialidades > 0 || hayProfes > 0) {
+            if (hayE > 0 || hayA > 0 || hayC > 0 || hayP > 0) {
                 em.getTransaction().rollback();
                 return "Ya hay datos en la BD. No se insertó nada.";
             }
 
-            // ============ 1) ESPECIALIDADES (8) ============
-            String[] espNombres = {
-                    "Matemáticas", "Lengua", "Inglés", "Biología",
-                    "Geografía e Historia", "Física y Química", "Tecnología", "Educación Física"
-            };
+            // =========================
+            // 1) ESPECIALIDADES (8)
+            // =========================
+            Especialidad espMat = new Especialidad();
+            espMat.setNombre("Matemáticas");
+            em.persist(espMat);
 
-            Map<String, Especialidad> mapaEsp = new HashMap<>();
-            for (String n : espNombres) {
-                Especialidad e = new Especialidad();
-                e.setNombre(n);
-                // e.setProfesores(new ArrayList<>()); // opcional
-                em.persist(e);
-                mapaEsp.put(n, e);
-            }
+            Especialidad espLen = new Especialidad();
+            espLen.setNombre("Lengua");
+            em.persist(espLen);
 
-            // ============ 2) ASIGNATURAS (15) ============
-            String[] asigNombres = {
-                    "Matemáticas I", "Matemáticas II", "Lengua Castellana", "Inglés",
-                    "Biología", "Geología", "Física", "Química", "Tecnología",
-                    "Historia", "Geografía", "Economía", "Filosofía", "Educación Física", "Dibujo Técnico"
-            };
+            Especialidad espIng = new Especialidad();
+            espIng.setNombre("Inglés");
+            em.persist(espIng);
 
-            Map<String, Asignatura> mapaAsig = new HashMap<>();
-            for (String n : asigNombres) {
-                Asignatura a = new Asignatura();
-                a.setNombre(n);
-                a.setProfesores(new ArrayList<>()); // IMPORTANTE para tus métodos auxiliares
-                em.persist(a);
-                mapaAsig.put(n, a);
-            }
+            Especialidad espBio = new Especialidad();
+            espBio.setNombre("Biología");
+            em.persist(espBio);
 
-            // ============ 3) CENTROS (5) ============
-            Object[][] centrosData = {
-                    {"IES Sierra Norte", "Madrid"},
-                    {"IES Valle Verde", "Alcalá de Henares"},
-                    {"IES Mar Azul", "Getafe"},
-                    {"IES Camino Real", "Móstoles"},
-                    {"IES Puerta del Sol", "Leganés"}
-            };
+            Especialidad espGHy = new Especialidad();
+            espGHy.setNombre("Geografía e Historia");
+            em.persist(espGHy);
 
-            List<Centro> centros = new ArrayList<>();
-            for (Object[] cdata : centrosData) {
-                Centro c = new Centro();
-                c.setNombre((String) cdata[0]);
-                c.setLocalidad((String) cdata[1]);
-                c.setProfesores(new ArrayList<>()); // para que no sea null si lo usas
-                em.persist(c);
-                centros.add(c);
-            }
+            Especialidad espFyQ = new Especialidad();
+            espFyQ.setNombre("Física y Química");
+            em.persist(espFyQ);
 
-            // ============ 4) PROFESORES (ejemplo: 3 por centro = 15) ============
-            // Creamos profesores con especialidad + centro, y ponemos jefes en cada centro
-            // Nota: jefes no obligatorios; aquí pongo 1 jefe por centro (primer profe), y el resto lo tiene.
-            List<Profesor> todos = new ArrayList<>();
+            Especialidad espTec = new Especialidad();
+            espTec.setNombre("Tecnología");
+            em.persist(espTec);
 
-            // Helper rápido para crear profesor
-            java.util.function.BiFunction<String, Especialidad, Profesor> nuevoProfesorBase = (nombre, especialidad) -> {
-                Profesor p = new Profesor();
-                p.setNombre(nombre);
-                p.setEspecialidad(especialidad);
-                p.setAsignaturas(new ArrayList<>());
-                return p;
-            };
+            Especialidad espEF = new Especialidad();
+            espEF.setNombre("Educación Física");
+            em.persist(espEF);
 
-            // Centro 1
-            Centro c1 = centros.get(0);
-            Profesor p1 = nuevoProfesorBase.apply("Ana Martín", mapaEsp.get("Matemáticas"));
+            // =========================
+            // 2) ASIGNATURAS (15)
+            // =========================
+            Asignatura asMatI = new Asignatura();
+            asMatI.setNombre("Matemáticas I");
+            asMatI.setProfesores(new ArrayList<>());
+            em.persist(asMatI);
+
+            Asignatura asMatII = new Asignatura();
+            asMatII.setNombre("Matemáticas II");
+            asMatII.setProfesores(new ArrayList<>());
+            em.persist(asMatII);
+
+            Asignatura asLengua = new Asignatura();
+            asLengua.setNombre("Lengua Castellana");
+            asLengua.setProfesores(new ArrayList<>());
+            em.persist(asLengua);
+
+            Asignatura asIngles = new Asignatura();
+            asIngles.setNombre("Inglés");
+            asIngles.setProfesores(new ArrayList<>());
+            em.persist(asIngles);
+
+            Asignatura asBio = new Asignatura();
+            asBio.setNombre("Biología");
+            asBio.setProfesores(new ArrayList<>());
+            em.persist(asBio);
+
+            Asignatura asGeoLog = new Asignatura();
+            asGeoLog.setNombre("Geología");
+            asGeoLog.setProfesores(new ArrayList<>());
+            em.persist(asGeoLog);
+
+            Asignatura asFisica = new Asignatura();
+            asFisica.setNombre("Física");
+            asFisica.setProfesores(new ArrayList<>());
+            em.persist(asFisica);
+
+            Asignatura asQuimica = new Asignatura();
+            asQuimica.setNombre("Química");
+            asQuimica.setProfesores(new ArrayList<>());
+            em.persist(asQuimica);
+
+            Asignatura asTecnologia = new Asignatura();
+            asTecnologia.setNombre("Tecnología");
+            asTecnologia.setProfesores(new ArrayList<>());
+            em.persist(asTecnologia);
+
+            Asignatura asHistoria = new Asignatura();
+            asHistoria.setNombre("Historia");
+            asHistoria.setProfesores(new ArrayList<>());
+            em.persist(asHistoria);
+
+            Asignatura asGeografia = new Asignatura();
+            asGeografia.setNombre("Geografía");
+            asGeografia.setProfesores(new ArrayList<>());
+            em.persist(asGeografia);
+
+            Asignatura asEconomia = new Asignatura();
+            asEconomia.setNombre("Economía");
+            asEconomia.setProfesores(new ArrayList<>());
+            em.persist(asEconomia);
+
+            Asignatura asFilosofia = new Asignatura();
+            asFilosofia.setNombre("Filosofía");
+            asFilosofia.setProfesores(new ArrayList<>());
+            em.persist(asFilosofia);
+
+            Asignatura asEF = new Asignatura();
+            asEF.setNombre("Educación Física");
+            asEF.setProfesores(new ArrayList<>());
+            em.persist(asEF);
+
+            Asignatura asDibujoTec = new Asignatura();
+            asDibujoTec.setNombre("Dibujo Técnico");
+            asDibujoTec.setProfesores(new ArrayList<>());
+            em.persist(asDibujoTec);
+
+            // =========================
+            // 3) CENTROS (5)
+            // =========================
+            Centro c1 = new Centro();
+            c1.setNombre("IES Sierra Norte");
+            c1.setLocalidad("Madrid");
+            // c1.setProfesores(new ArrayList<>()); // SOLO si tu Centro tiene esa lista bien anotada
+            em.persist(c1);
+
+            Centro c2 = new Centro();
+            c2.setNombre("IES Valle Verde");
+            c2.setLocalidad("Alcalá de Henares");
+            em.persist(c2);
+
+            Centro c3 = new Centro();
+            c3.setNombre("IES Mar Azul");
+            c3.setLocalidad("Getafe");
+            em.persist(c3);
+
+            Centro c4 = new Centro();
+            c4.setNombre("IES Camino Real");
+            c4.setLocalidad("Móstoles");
+            em.persist(c4);
+
+            Centro c5 = new Centro();
+            c5.setNombre("IES Puerta del Sol");
+            c5.setLocalidad("Leganés");
+            em.persist(c5);
+
+            // =========================
+            // 4) PROFESORES (15, 3 por centro)
+            // (1º de cada centro será “jefe” y además director)
+            // =========================
+            Profesor p1 = new Profesor();
+            p1.setNombre("Ana Martín");
             p1.setCentro(c1);
+            p1.setEspecialidad(espMat);
+            p1.setAsignaturas(new ArrayList<>());
             em.persist(p1);
 
-            Profesor p2 = nuevoProfesorBase.apply("Luis García", mapaEsp.get("Lengua"));
+            Profesor p2 = new Profesor();
+            p2.setNombre("Luis García");
             p2.setCentro(c1);
+            p2.setEspecialidad(espLen);
             p2.setJefeDepartamento(p1);
+            p2.setAsignaturas(new ArrayList<>());
             em.persist(p2);
 
-            Profesor p3 = nuevoProfesorBase.apply("Marta López", mapaEsp.get("Inglés"));
+            Profesor p3 = new Profesor();
+            p3.setNombre("Marta López");
             p3.setCentro(c1);
+            p3.setEspecialidad(espIng);
             p3.setJefeDepartamento(p1);
+            p3.setAsignaturas(new ArrayList<>());
             em.persist(p3);
 
-            // Centro 2
-            Centro c2 = centros.get(1);
-            Profesor p4 = nuevoProfesorBase.apply("Carlos Pérez", mapaEsp.get("Física y Química"));
+            Profesor p4 = new Profesor();
+            p4.setNombre("Carlos Pérez");
             p4.setCentro(c2);
+            p4.setEspecialidad(espFyQ);
+            p4.setAsignaturas(new ArrayList<>());
             em.persist(p4);
 
-            Profesor p5 = nuevoProfesorBase.apply("Sara Díaz", mapaEsp.get("Biología"));
+            Profesor p5 = new Profesor();
+            p5.setNombre("Sara Díaz");
             p5.setCentro(c2);
+            p5.setEspecialidad(espBio);
             p5.setJefeDepartamento(p4);
+            p5.setAsignaturas(new ArrayList<>());
             em.persist(p5);
 
-            Profesor p6 = nuevoProfesorBase.apply("Irene Ruiz", mapaEsp.get("Geografía e Historia"));
+            Profesor p6 = new Profesor();
+            p6.setNombre("Irene Ruiz");
             p6.setCentro(c2);
+            p6.setEspecialidad(espGHy);
             p6.setJefeDepartamento(p4);
+            p6.setAsignaturas(new ArrayList<>());
             em.persist(p6);
 
-            // Centro 3
-            Centro c3 = centros.get(2);
-            Profesor p7 = nuevoProfesorBase.apply("Javier Torres", mapaEsp.get("Biología"));
+            Profesor p7 = new Profesor();
+            p7.setNombre("Javier Torres");
             p7.setCentro(c3);
+            p7.setEspecialidad(espTec);
+            p7.setAsignaturas(new ArrayList<>());
             em.persist(p7);
 
-            Profesor p8 = nuevoProfesorBase.apply("Noelia Sánchez", mapaEsp.get("Matemáticas"));
+            Profesor p8 = new Profesor();
+            p8.setNombre("Noelia Sánchez");
             p8.setCentro(c3);
+            p8.setEspecialidad(espMat);
             p8.setJefeDepartamento(p7);
+            p8.setAsignaturas(new ArrayList<>());
             em.persist(p8);
 
-            Profesor p9 = nuevoProfesorBase.apply("Pablo Romero", mapaEsp.get("Inglés"));
+            Profesor p9 = new Profesor();
+            p9.setNombre("Pablo Romero");
             p9.setCentro(c3);
+            p9.setEspecialidad(espIng);
             p9.setJefeDepartamento(p7);
+            p9.setAsignaturas(new ArrayList<>());
             em.persist(p9);
 
-            // Centro 4
-            Centro c4 = centros.get(3);
-            Profesor p10 = nuevoProfesorBase.apply("Elena Navarro", mapaEsp.get("Educación Física"));
+            Profesor p10 = new Profesor();
+            p10.setNombre("Elena Navarro");
             p10.setCentro(c4);
+            p10.setEspecialidad(espEF);
+            p10.setAsignaturas(new ArrayList<>());
             em.persist(p10);
 
-            Profesor p11 = nuevoProfesorBase.apply("Raúl Vega", mapaEsp.get("Matemáticas"));
+            Profesor p11 = new Profesor();
+            p11.setNombre("Raúl Vega");
             p11.setCentro(c4);
+            p11.setEspecialidad(espLen);
             p11.setJefeDepartamento(p10);
+            p11.setAsignaturas(new ArrayList<>());
             em.persist(p11);
 
-            Profesor p12 = nuevoProfesorBase.apply("Claudia Gil", mapaEsp.get("Geografía e Historia"));
+            Profesor p12 = new Profesor();
+            p12.setNombre("Claudia Gil");
             p12.setCentro(c4);
+            p12.setEspecialidad(espGHy);
             p12.setJefeDepartamento(p10);
+            p12.setAsignaturas(new ArrayList<>());
             em.persist(p12);
 
-            // Centro 5
-            Centro c5 = centros.get(4);
-            Profesor p13 = nuevoProfesorBase.apply("David Molina", mapaEsp.get("Biología"));
+            Profesor p13 = new Profesor();
+            p13.setNombre("David Molina");
             p13.setCentro(c5);
+            p13.setEspecialidad(espBio);
+            p13.setAsignaturas(new ArrayList<>());
             em.persist(p13);
 
-            Profesor p14 = nuevoProfesorBase.apply("Lucía Herrera", mapaEsp.get("Física y Química"));
+            Profesor p14 = new Profesor();
+            p14.setNombre("Lucía Herrera");
             p14.setCentro(c5);
+            p14.setEspecialidad(espFyQ);
             p14.setJefeDepartamento(p13);
+            p14.setAsignaturas(new ArrayList<>());
             em.persist(p14);
 
-            Profesor p15 = nuevoProfesorBase.apply("Marcos Cano", mapaEsp.get("Tecnología"));
+            Profesor p15 = new Profesor();
+            p15.setNombre("Marcos Cano");
             p15.setCentro(c5);
+            p15.setEspecialidad(espTec);
             p15.setJefeDepartamento(p13);
+            p15.setAsignaturas(new ArrayList<>());
             em.persist(p15);
 
-            todos.addAll(List.of(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15));
-
-            // ============ 5) DIRECTORES (uno por centro) ============
-            // (Como OneToOne: cada centro tiene 1 director opcional)
+            // =========================
+            // 5) DIRECTORES (uno por centro)
+            // =========================
             c1.setDirector(p1);
             c2.setDirector(p4);
             c3.setDirector(p7);
@@ -322,69 +439,76 @@ public class Repository {
             em.merge(c4);
             em.merge(c5);
 
-            // ============ 6) ASIGNAR ASIGNATURAS A PROFES ============
-            // Usamos tu método auxiliar p.añadirAsignatura(a) (añade en ambos lados)
-            // (IMPORTANTE: por eso inicialicé listas arriba)
-            // Centro 1
-            p1.añadirAsignatura(mapaAsig.get("Matemáticas I"));
-            p1.añadirAsignatura(mapaAsig.get("Matemáticas II"));
+            // =========================
+            // 6) ASIGNAR ASIGNATURAS A PROFES
+            // (usa tu método auxiliar para mantener ambos lados)
+            // =========================
+            p1.añadirAsignatura(asMatI);
+            p1.añadirAsignatura(asMatII);
 
-            p2.añadirAsignatura(mapaAsig.get("Lengua Castellana"));
-            p2.añadirAsignatura(mapaAsig.get("Filosofía"));
+            p2.añadirAsignatura(asLengua);
+            p2.añadirAsignatura(asFilosofia);
 
-            p3.añadirAsignatura(mapaAsig.get("Inglés"));
+            p3.añadirAsignatura(asIngles);
 
-            // Centro 2
-            p4.añadirAsignatura(mapaAsig.get("Física"));
-            p4.añadirAsignatura(mapaAsig.get("Química"));
+            p4.añadirAsignatura(asFisica);
+            p4.añadirAsignatura(asQuimica);
 
-            p5.añadirAsignatura(mapaAsig.get("Biología"));
-            p5.añadirAsignatura(mapaAsig.get("Geología"));
+            p5.añadirAsignatura(asBio);
+            p5.añadirAsignatura(asGeoLog);
 
-            p6.añadirAsignatura(mapaAsig.get("Historia"));
-            p6.añadirAsignatura(mapaAsig.get("Biología"));
-            p6.añadirAsignatura(mapaAsig.get("Economía"));
+            p6.añadirAsignatura(asHistoria);
+            p6.añadirAsignatura(asGeografia);
+            p6.añadirAsignatura(asEconomia);
 
-            // Centro 3
-            p7.añadirAsignatura(mapaAsig.get("Tecnología"));
-            p7.añadirAsignatura(mapaAsig.get("Dibujo Técnico"));
+            p7.añadirAsignatura(asTecnologia);
+            p7.añadirAsignatura(asDibujoTec);
 
-            p8.añadirAsignatura(mapaAsig.get("Matemáticas I"));
-            p8.añadirAsignatura(mapaAsig.get("Matemáticas II"));
+            p8.añadirAsignatura(asMatI);
+            p8.añadirAsignatura(asMatII);
 
-            p9.añadirAsignatura(mapaAsig.get("Inglés"));
+            p9.añadirAsignatura(asIngles);
 
-            // Centro 4
-            p10.añadirAsignatura(mapaAsig.get("Educación Física"));
+            p10.añadirAsignatura(asEF);
 
-            p11.añadirAsignatura(mapaAsig.get("Lengua Castellana"));
-            p11.añadirAsignatura(mapaAsig.get("Filosofía"));
+            p11.añadirAsignatura(asLengua);
+            p11.añadirAsignatura(asFilosofia);
 
-            p12.añadirAsignatura(mapaAsig.get("Historia"));
-            p12.añadirAsignatura(mapaAsig.get("Geografía"));
+            p12.añadirAsignatura(asHistoria);
+            p12.añadirAsignatura(asGeografia);
 
-            // Centro 5
-            p13.añadirAsignatura(mapaAsig.get("Biología"));
-            p13.añadirAsignatura(mapaAsig.get("Geología"));
+            p13.añadirAsignatura(asBio);
+            p13.añadirAsignatura(asGeoLog);
 
-            p14.añadirAsignatura(mapaAsig.get("Física"));
-            p14.añadirAsignatura(mapaAsig.get("Química"));
+            p14.añadirAsignatura(asFisica);
+            p14.añadirAsignatura(asQuimica);
 
-            p15.añadirAsignatura(mapaAsig.get("Tecnología"));
-            p15.añadirAsignatura(mapaAsig.get("Dibujo Técnico"));
+            p15.añadirAsignatura(asTecnologia);
+            p15.añadirAsignatura(asDibujoTec);
 
-            // Como la tabla intermedia la gobierna Profesor (JoinTable está en Profesor),
-            // con hacer merge de los profesores ya queda guardada la relación.
-            for (Profesor p : todos) {
-                em.merge(p);
-            }
+            // Guardar la tabla intermedia (owning side = Profesor)
+            em.merge(p1);
+            em.merge(p2);
+            em.merge(p3);
+            em.merge(p4);
+            em.merge(p5);
+            em.merge(p6);
+            em.merge(p7);
+            em.merge(p8);
+            em.merge(p9);
+            em.merge(p10);
+            em.merge(p11);
+            em.merge(p12);
+            em.merge(p13);
+            em.merge(p14);
+            em.merge(p15);
 
             em.getTransaction().commit();
-            return "OK: datos completos insertados (5 centros, 8 especialidades, 15 asignaturas, 15 profesores + directores + jefes + asignaciones).";
+            return "OK: datos completos insertados (8 esp, 15 asig, 5 centros, 15 profes, directores, jefes, asignaciones).";
 
         } catch (Exception ex) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            return "ERROR cargando datos completos: " + ex.getClass().getSimpleName() + " -> " + ex.getMessage();
+            return "Error cargando datos: " +  ex.getMessage();
         }
     }
 }
