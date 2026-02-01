@@ -300,7 +300,6 @@ public class Repository {
             Centro c1 = new Centro();
             c1.setNombre("IES Sierra Norte");
             c1.setLocalidad("Madrid");
-            // c1.setProfesores(new ArrayList<>()); // SOLO si tu Centro tiene esa lista bien anotada
             em.persist(c1);
 
             Centro c2 = new Centro();
