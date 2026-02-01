@@ -7,7 +7,7 @@ import java.util.List;
 @Entity
 @Table(name = "centros")
 @NamedQuery(name = "Centro.findAll",
-            query =  "SELECT c FROM Centro c LEFT JOIN FETCH c.director ORDER BY c.nombre")
+            query =  "SELECT c FROM Centro c LEFT JOIN c.director ORDER BY c.nombre")
 public class Centro {
 
     @Id

@@ -6,40 +6,49 @@ import alber.model.Especialidad;
 import alber.model.Profesor;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-
+/*Al igual que en OpenWeather, voy a hacer una clase Repository para el manejo de operaciones de bases de datos
+* de esta forma, en la clase de la ventana simplemente en los eventos uso repository y se queda todo mas ordenado*/
 public class Repository {
 
     private EntityManager em;
+
+    /*Recibimos el EntityManager por el constructor del repo*/
     public Repository(EntityManager em) {
         this.em = em;
     }
 
+    /*Operacion 1, no es mas que dos selects (una normal y otra muy gorda) en las que cogemos todos los datos que nos pide y hacemos un
+    * StringBuilder para montar la cadena con la info solicitada para que quede más bonita */
     public String listarProf_Asig() {
         StringBuilder sb = new StringBuilder();
 
+        //cogemos las asignaturas con la primera namedQuery
         List<Asignatura> asignaturas = findAsignaturas();
 
+        //si no hay asignaturas chapamos
         if(asignaturas.isEmpty()){
             return ("No hay asignaturas");
         }
 
+        //variables para ver que asignatura tiene mas profes
         Asignatura asigMax = null;
         int maxProfes = -1;
 
+        /*Select para coger los datos de cada profesor*/
         for (Asignatura asignatura : asignaturas) {
             List<Profesor> profesores = em.createQuery("SELECT DISTINCT p " +
                 "FROM Profesor p " +
                 "JOIN p.asignaturas a " +
-                "LEFT JOIN FETCH p.especialidad " +
-                "LEFT JOIN FETCH p.centro " +
-                "LEFT JOIN FETCH p.jefeDepartamento " +
+                "LEFT JOIN p.especialidad " +
+                "LEFT JOIN p.centro " +
+                "LEFT JOIN p.jefeDepartamento " +
                 "WHERE a.id = :idAsig " +
                 "ORDER BY p.nombre", Profesor.class).setParameter("idAsig", asignatura.getId()).getResultList();
 
+            /*Cogemos el numero de profes que dan la asignatura, si no hay nadie decimos que nadie la da
+            * si no, cogemos los datos de todos los que la dan y ponemos los datos de la asignatura y de quien la da*/
             int numProfes = profesores.size();
 
             sb.append(asignatura.getNombre()).append(", ").append("ID: " + asignatura.getId()).append(", ").append("Número de profes: " + numProfes).append("\n");
@@ -48,14 +57,14 @@ public class Repository {
             }else{
                 sb.append("PROFESORES QUE DAN LA ASIGNATURA:\n");
                 for (Profesor p : profesores) {
-                    String especialidad = (p.getEspecialidad() != null ? p.getEspecialidad().getNombre() : "Sin especialidad");
-                    String Centro = (p.getCentro() != null ? p.getCentro().getNombre() : "Sin Centro");
+                    /*Puesto que un profe puede no tener jefe de departamento, comprobamos cada uno, si no tiene jefe
+                    * ponemos un texto generico para que no nos de un NullPointerException*/
                     String Jefe = (p.getJefeDepartamento() != null ? p.getJefeDepartamento().getNombre() :  "Sin Jefe");
-                    sb.append(p.getNombre()).append(", ").append(p.getId()).append(", ").append(especialidad)
-                            .append(", ").append(Centro).append(", ").append("JEFE: " + Jefe).append("\n");
+                    sb.append(p.getNombre()).append(", ").append(p.getId()).append(", ").append(p.getEspecialidad().getNombre())
+                            .append(", ").append(p.getCentro().getNombre()).append(", ").append("JEFE: " + Jefe).append("\n");
                 }
             }
-
+            //si el numero de profes de la asignatura supera al maximo le damos el maximo a esta asignatura
             if(numProfes > maxProfes){
                 maxProfes = numProfes;
                 asigMax = asignatura;
@@ -69,8 +78,11 @@ public class Repository {
         return sb.toString();
     }
 
+    /*Operacion 2, otras selects (esta vez más sencillas que la primera operacion) en la que vamos listando cada centro
+    * con sus datos, y el numero de profes y asignaturas que da*/
     public String listarCentros() {
         StringBuilder sb = new StringBuilder();
+        //namedQuery con todos los centros
         List<Centro> centros = findCentros();
 
         if(centros.isEmpty()){
@@ -85,8 +97,10 @@ public class Repository {
             Long numAsignaturas = em.createQuery("SELECT COUNT (DISTINCT a.id) FROM Profesor p JOIN p.asignaturas a WHERE p.centro.id = : idCentro",
                     Long.class).setParameter("idCentro", c.getId()).getSingleResult();
 
+            //el centro puede no tener director, hacemos lo mismo que con jefe en la primera
             String director = (c.getDirector() != null ? c.getDirector().getNombre() : "Sin Director");
 
+            //StringBuilder con toda la info que nos pide
             sb.append("Centro: " + c.getNombre())
                     .append(", ").append("ID: " + c.getId())
                     .append(", ").append("Localidad: " + c.getLocalidad())
@@ -98,7 +112,9 @@ public class Repository {
         return sb.toString();
     }
 
+    /*Operacion 3, le pasamos 2 parametros de ids, comprueban si son validos y los inserta con una transaccion*/
     public String insertarAsignaturaEnProfesor(Long idAsig, Long idProf) {
+        /*Comprobacion de si estan vacios, y si no están vacios, si existen dentro del listado de asignaturas*/
         if(idAsig == null || idProf == null){
             return"IDs inválidos (null).";
         }
@@ -113,14 +129,16 @@ public class Repository {
             return "No existe el profesor con id: " + idProf;
         }
 
-        boolean yaLaImparte = em.createQuery("SELECT COUNT(a.id)" +
-                "FROM Profesor p JOIN p.asignaturas a WHERE p.id = :idProf AND a.id = : idAsig", Long.class).setParameter("idProf", idProf)
+        /*Sabiendo que son ya valores completamente validos, ahora comprobamos con una query que el profe no imparta ya la asignatura*/
+        boolean yaLaImparte = em.createQuery("SELECT COUNT(a.id) " +
+                "FROM Profesor p JOIN p.asignaturas a WHERE p.id = :idProf AND a.id = :idAsig", Long.class).setParameter("idProf", idProf)
                 .setParameter("idAsig", idAsig).getSingleResult() > 0;
 
         if(yaLaImparte){
             return "El profesor "+ idProf + " ya imparte la asignatura: " + idAsig;
         }
 
+        /*Cuando hemos visto que todo esta correcto, hacemos una transacción para añadir la asignatura*/
         try{
             em.getTransaction().begin();
 
@@ -131,6 +149,7 @@ public class Repository {
             em.getTransaction().commit();
             return "Operación realizada correctamente: Profesor " + idProf + " imparte la asignatura " + idAsig;
         } catch (Exception e) {
+            //si falla hacemos rollback y mensaje de error
             if(em.getTransaction().isActive()){
                 em.getTransaction().rollback();
             }
@@ -139,6 +158,7 @@ public class Repository {
 
     }
 
+    /******************************METODOS AUXILIARES CON LOS NAMED QUERYS******************************************/
     public List<Asignatura> findAsignaturas() {
         return em.createNamedQuery("Asignatura.findAll").getResultList();
     }
@@ -146,13 +166,16 @@ public class Repository {
     public List<Centro> findCentros() {
         return em.createNamedQuery("Centro.findAll").getResultList();
     }
+    /******************************METODOS AUXILIARES CON LOS NAMED QUERYS******************************************/
 
 
-    public String cargarDatosInicialesCompletos() {
+    /*Para cargar todos los datos iniciales que nos pide el ejercicio*/
+    public String cargarDatosIniciales() {
         try {
             em.getTransaction().begin();
 
-            // Evitar duplicados: si ya hay algo, no insertamos
+            /*Puesto que esta función se ejecuta al abrir la app, comprobamos si hay datos en alguna de las tablas
+            * si lo hay tiramos return y no metemos nada*/
             Long hayE = em.createQuery("SELECT COUNT(e.id) FROM Especialidad e", Long.class).getSingleResult();
             Long hayA = em.createQuery("SELECT COUNT(a.id) FROM Asignatura a", Long.class).getSingleResult();
             Long hayC = em.createQuery("SELECT COUNT(c.id) FROM Centro c", Long.class).getSingleResult();
@@ -163,9 +186,8 @@ public class Repository {
                 return "Ya hay datos en la BD. No se insertó nada.";
             }
 
-            // =========================
-            // 1) ESPECIALIDADES (8)
-            // =========================
+            /******************************8 ESPECIALIDADES******************************************/
+
             Especialidad espMat = new Especialidad();
             espMat.setNombre("Matemáticas");
             em.persist(espMat);
@@ -198,9 +220,7 @@ public class Repository {
             espEF.setNombre("Educación Física");
             em.persist(espEF);
 
-            // =========================
-            // 2) ASIGNATURAS (15)
-            // =========================
+            /****************************** 15 ASIGNATURAS ******************************************/
             Asignatura asMatI = new Asignatura();
             asMatI.setNombre("Matemáticas I");
             asMatI.setProfesores(new ArrayList<>());
@@ -276,9 +296,7 @@ public class Repository {
             asDibujoTec.setProfesores(new ArrayList<>());
             em.persist(asDibujoTec);
 
-            // =========================
-            // 3) CENTROS (5)
-            // =========================
+            /****************************** 5 CENTROS ******************************************/
             Centro c1 = new Centro();
             c1.setNombre("IES Sierra Norte");
             c1.setLocalidad("Madrid");
@@ -305,10 +323,7 @@ public class Repository {
             c5.setLocalidad("Leganés");
             em.persist(c5);
 
-            // =========================
-            // 4) PROFESORES (15, 3 por centro)
-            // (1º de cada centro será “jefe” y además director)
-            // =========================
+            /****************************** 15 PROFES (alguno jefe de departamento) ******************************************/
             Profesor p1 = new Profesor();
             p1.setNombre("Ana Martín");
             p1.setCentro(c1);
@@ -424,13 +439,9 @@ public class Repository {
             p15.setAsignaturas(new ArrayList<>());
             em.persist(p15);
 
-            // =========================
-            // 5) DIRECTORES (uno por centro)
-            // =========================
+            /****************************** 3 DIRECTORES (para probar el null) ******************************************/
             c1.setDirector(p1);
             c2.setDirector(p4);
-            c3.setDirector(p7);
-            c4.setDirector(p10);
             c5.setDirector(p13);
 
             em.merge(c1);
@@ -439,10 +450,8 @@ public class Repository {
             em.merge(c4);
             em.merge(c5);
 
-            // =========================
-            // 6) ASIGNAR ASIGNATURAS A PROFES
-            // (usa tu método auxiliar para mantener ambos lados)
-            // =========================
+            /******************************  DARLE ASIGNATURAS A PROFES ******************************************/
+
             p1.añadirAsignatura(asMatI);
             p1.añadirAsignatura(asMatII);
 
@@ -486,7 +495,6 @@ public class Repository {
             p15.añadirAsignatura(asTecnologia);
             p15.añadirAsignatura(asDibujoTec);
 
-            // Guardar la tabla intermedia (owning side = Profesor)
             em.merge(p1);
             em.merge(p2);
             em.merge(p3);
@@ -504,7 +512,7 @@ public class Repository {
             em.merge(p15);
 
             em.getTransaction().commit();
-            return "OK: datos completos insertados (8 esp, 15 asig, 5 centros, 15 profes, directores, jefes, asignaciones).";
+            return "OK: datos completos insertados (8 esp, 5 centros, 15 profes, directores, jefes, asignaciones).";
 
         } catch (Exception ex) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();

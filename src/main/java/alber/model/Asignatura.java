@@ -6,6 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "asignaturas")
+/*Para variar un poco he creado alguna namedQuery para luego usarla en las operaciones que haga falta*/
 @NamedQuery(name = "Asignatura.findAll",
                 query ="Select a from Asignatura a ORDER BY a.nombre")
 public class Asignatura {
