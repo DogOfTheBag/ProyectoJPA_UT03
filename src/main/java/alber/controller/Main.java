@@ -14,7 +14,7 @@ public class Main {
 
         Repository repo = new Repository(em);
 
-        repo.cargarDatosInicialesCompletos();
+        System.out.println(repo.cargarDatosInicialesCompletos());
         new VentanaPrincipal(repo).setVisible(true);
     }
 }

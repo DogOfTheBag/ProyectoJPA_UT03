@@ -23,11 +23,6 @@ public class Asignatura {
     public Asignatura() {
     }
 
-    public Asignatura(String nombre) {
-        this.nombre = nombre;
-    }
-
-
     public Long getId() {
         return id;
     }

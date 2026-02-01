@@ -38,10 +38,6 @@ public class Profesor {
     public Profesor() {
     }
 
-    public Profesor(String nombre, Especialidad especialidad) {
-        this.nombre = nombre;
-        this.especialidad = especialidad;
-    }
 
     /****MÉTODOS AUXILIARES****/
     public void añadirAsignatura(Asignatura asignatura) {
@@ -49,7 +45,6 @@ public class Profesor {
         if(!this.asignaturas.contains(asignatura)) {this.asignaturas.add(asignatura);}
         if(!asignatura.getProfesores().contains(this)) {asignatura.getProfesores().add(this);}
     }
-
     /****MÉTODOS AUXILIARES****/
 
     public Long getId() {

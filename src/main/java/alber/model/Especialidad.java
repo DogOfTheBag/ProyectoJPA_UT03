@@ -24,10 +24,6 @@ public class Especialidad {
     public Especialidad() {
     }
 
-    public Especialidad(String nombre) {
-        this.nombre = nombre;
-    }
-
     public Long getId() {
         return id;
     }

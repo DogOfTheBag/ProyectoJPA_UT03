@@ -33,10 +33,6 @@ public class Centro {
     public Centro() {
     }
 
-    public Centro(String nombre, String localidad) {
-        this.nombre = nombre;
-        this.localidad = localidad;
-    }
 
     public Long getId() {
         return id;
