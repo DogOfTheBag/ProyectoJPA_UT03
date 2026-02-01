@@ -94,7 +94,7 @@ public class Repository {
             Long numProfes = em.createQuery("SELECT COUNT(p.id) FROM Profesor p WHERE p.centro.id = :idCentro", Long.class).setParameter("idCentro", c.getId()).getSingleResult();
 
             //contamos las asignaturas por id distinto desde la tabla de profesores, teniendo en cuenta cada centro
-            Long numAsignaturas = em.createQuery("SELECT COUNT (DISTINCT a.id) FROM Profesor p JOIN p.asignaturas a WHERE p.centro.id = : idCentro",
+            Long numAsignaturas = em.createQuery("SELECT COUNT (DISTINCT a.id) FROM Profesor p JOIN p.asignaturas a WHERE p.centro.id = :idCentro",
                     Long.class).setParameter("idCentro", c.getId()).getSingleResult();
 
             //el centro puede no tener director, hacemos lo mismo que con jefe en la primera
